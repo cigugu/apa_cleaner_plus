@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>研究生建檔文字清理工具｜APA 強化版</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Noto Sans TC", "Microsoft JhengHei", Arial, sans-serif;
+      background: #f4f6f8;
+      color: #222;
+    }
+
+    .page {
+      max-width: 1150px;
+      margin: 0 auto;
+      padding: 32px 20px;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: 30px;
+      color: #1f2937;
+    }
+
+    .subtitle {
+      margin: 0 0 24px;
+      color: #555;
+      line-height: 1.7;
+    }
+
+    .disclaimer {
+      background: #fff8e1;
+      border-left: 5px solid #f2c94c;
+      padding: 14px 16px;
+      margin: 20px 0 28px;
+      border-radius: 8px;
+      color: #5f4b00;
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    .section-title {
+      font-weight: 700;
+      margin: 20px 0 8px;
+      color: #333;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 230px;
+      padding: 16px;
+      font-size: 16px;
+      line-height: 1.7;
+      border: 1px solid #d0d7de;
+      border-radius: 12px;
+      resize: vertical;
+      outline: none;
+      background: #fff;
+    }
+
+    textarea:focus {
+      border-color: #2f80ed;
+      box-shadow: 0 0 0 3px rgba(47, 128, 237, 0.15);
+    }
+
+    .button-group,
+    .option-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 20px 0;
+      align-items: center;
+    }
+
+    .option-group label {
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 15px;
+      cursor: pointer;
+      color: white;
+      background: #2f80ed;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    button.secondary { background: #4b5563; }
+    button.danger { background: #d9534f; }
+    button.main {
+      background: #1f7a4d;
+      font-weight: 700;
+    }
+
+    .hint,
+    .footer-note {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 10px;
+      line-height: 1.6;
+    }
+
+    .report {
+      display: none;
+      background: #f8fafc;
+      border: 1px solid #dbe3ec;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin: 16px 0;
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .report strong { color: #1f2937; }
+
+    .warning-list {
+      margin: 8px 0 0;
+      padding-left: 20px;
+      color: #8a4b00;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    @media (max-width: 800px) {
+      .mini-grid { grid-template-columns: 1fr; }
+
+      .card {
+        padding: 24px 18px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      button {
+        width: 100%;
+      }
+
+      .option-group label {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <div class="card">
+      <h1>研究生建檔文字清理工具｜APA 強化版</h1>
+
+      <p class="subtitle">
+        可貼上大綱、摘要、中文段落或多筆 APA 參考文獻。本工具會自動判斷 APA 開頭，
+        將被 PDF 斷行的同一筆參考文獻合併，並清除中文內容中不必要的空格。
+      </p>
+
+      <div class="disclaimer">
+        <strong>使用提醒：</strong>
+        本工具適合做「文字清理」與「常見 APA 排版修正」，例如逗號後缺空格、標點前多空格、中文中間多空格、頁碼後多出數字等。
+        但它不是正式 APA 第 7 版審稿器，書名斜體、期刊卷期、DOI 正確性仍建議人工複查。
+      </div>
+
+      <div class="section-title">原始文字</div>
+      <textarea id="inputText" placeholder="請貼上需要整理的文字，例如多筆 APA 參考文獻、中文段落、摘要、大綱等。"></textarea>
+
+      <div class="option-group">
+        <label>
+          <input type="checkbox" id="fixChineseSpaces" checked />
+          自動刪除中文內容中的多餘空格
+        </label>
+
+        <label>
+          <input type="checkbox" id="fixApaPunctuation" checked />
+          修正常見 APA 標點與空格
+        </label>
+
+        <label>
+          <input type="checkbox" id="removeSuspiciousPageTail" checked />
+          刪除頁碼後疑似多出的數字，例如 566–572.144
+        </label>
+
+        <label>
+          <input type="checkbox" id="showBlankLineBetweenRefs" checked />
+          每筆 APA 之間空一行
+        </label>
+      </div>
+
+      <div class="button-group">
+        <button class="main" onclick="autoClean()">自動偵測並清理</button>
+        <button onclick="cleanAPA()">清理 APA 參考文獻</button>
+        <button onclick="cleanNormalText()">清理一般段落 / 大綱</button>
+        <button class="secondary" onclick="copyResult()">複製結果</button>
+        <button class="danger" onclick="clearAll()">清空</button>
+      </div>
+
+      <div id="report" class="report"></div>
+
+      <div class="mini-grid">
+        <div>
+          <div class="section-title">整理後結果</div>
+          <div class="hint">
+            APA 會以「作者 + 年份」偵測每一筆開頭；中文段落會移除中文字之間、中文標點前後不必要的空格。
+          </div>
+          <textarea id="outputText" placeholder="整理後的文字會出現在這裡。"></textarea>
+        </div>
+
+        <div>
+          <div class="section-title">偵測到的 APA 清單</div>
+          <div class="hint">
+            這裡會列出系統切分出來的每一筆 APA，方便你檢查是否有切錯。
+          </div>
+          <textarea id="detectedRefs" placeholder="偵測到的 APA 會出現在這裡。"></textarea>
+        </div>
+      </div>
+
+      <div class="footer-note">
+        建議流程：先按「自動偵測並清理」。如果偵測到的 APA 清單切分正確，再複製整理後結果。
+        若資料包含中文摘要與英文文獻混在一起，建議分段貼上，準確率會更高。
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function isChineseChar(char) {
+      return /[\u3400-\u9fff]/.test(char);
+    }
+
+    function isEnglishChar(char) {
+      return /[A-Za-zÀ-ÖØ-öø-ÿ]/.test(char);
+    }
+
+    function isPunctuation(char) {
+      return /[，。！？；：、,.!?;:)]/.test(char);
+    }
+
+    function removeLiteratureHeadings(text) {
+      return text
+        .replace(/^中文文獻\s*$/gm, "")
+        .replace(/^英文文獻\s*$/gm, "")
+        .replace(/中文文獻/g, "")
+        .replace(/英文文獻/g, "");
+    }
+
+    function normalizeInput(text) {
+      return removeLiteratureHeadings(text)
+        .replace(/\r\n/g, "\n")
+        .replace(/\r/g, "\n")
+        .replace(/\u00A0/g, " ")
+        .replace(/\u3000/g, " ")
+        .replace(/[ \t]+/g, " ")
+        .trim();
+    }
+
+    function removeSpacesInsideChinese(text) {
+      // 中文字與中文字之間的空格：刪除
+      text = text.replace(/([\u3400-\u9fff])\s+([\u3400-\u9fff])/g, "$1$2");
+
+      // 中文字與中文標點之間的空格：刪除
+      text = text.replace(/([\u3400-\u9fff])\s+([，。！？；：、）】》])/g, "$1$2");
+      text = text.replace(/([（【《])\s+([\u3400-\u9fff])/g, "$1$2");
+
+      // 中文標點後如果接中文，也不需要空格
+      text = text.replace(/([，。！？；：、])\s+([\u3400-\u9fff])/g, "$1$2");
+
+      return text;
+    }
+
+    function looksLikeAPAStart(line) {
+      line = line.trim();
+
+      /*
+        英文 APA 常見格式：
+        Mazur, E. (2006).
+        O’Neill, A. M. (2011).
+        Chen, Y. L., & Wang, H. T. (2021).
+
+        中文 APA 常見格式：
+        王小明（2020）。
+        王小明、李小華（2021）。
+      */
+
+      const englishAPA =
+        /^[A-ZÀ-ÖØ-Þ][A-Za-zÀ-ÖØ-öø-ÿ'’.-]+,\s*(?:[A-Z]\.\s*)+(?:,\s*(?:&\s*)?[A-ZÀ-ÖØ-Þ][A-Za-zÀ-ÖØ-öø-ÿ'’.-]+,\s*(?:[A-Z]\.\s*)+)*\(\d{4}[a-z]?\)\./;
+
+      const englishAPAWithManyAuthors =
+        /^[A-ZÀ-ÖØ-Þ][^()]{1,180}\(\d{4}[a-z]?\)\./;
+
+      const chineseAPA =
+        /^[\u3400-\u9fff]{2,}(?:、[\u3400-\u9fff]{2,})*\s*[（(]\d{4}[a-z]?[）)]/;
+
+      return englishAPA.test(line) || englishAPAWithManyAuthors.test(line) || chineseAPA.test(line);
+    }
+
+    function protectPossibleNewReference(text) {
+      /*
+        有些貼上文字會變成：
+        ... 160–178. Smith, J. (2020). Title...
+        這裡嘗試在下一筆 APA 開頭前補換行。
+      */
+      return text
+        .replace(/([。.!?]\s+)([A-ZÀ-ÖØ-Þ][A-Za-zÀ-ÖØ-öø-ÿ'’.-]+,\s*(?:[A-Z]\.\s*)+\(\d{4}[a-z]?\)\.)/g, "$1\n$2")
+        .replace(/([。.!?]\s+)([\u3400-\u9fff]{2,}(?:、[\u3400-\u9fff]{2,})*\s*[（(]\d{4}[a-z]?[）)]) /g, "$1\n$2 ");
+    }
+
+    function joinLines(previousText, nextLine) {
+      previousText = previousText.trim();
+      nextLine = nextLine.trim();
+
+      if (previousText === "") return nextLine;
+      if (nextLine === "") return previousText;
+
+      let previousChar = previousText.slice(-1);
+      let nextChar = nextLine.charAt(0);
+
+      if (isChineseChar(previousChar) && isChineseChar(nextChar)) {
+        return previousText + nextLine;
+      }
+
+      if (isEnglishChar(previousChar) && isEnglishChar(nextChar)) {
+        return previousText + " " + nextLine;
+      }
+
+      if (
+        (isChineseChar(previousChar) && isEnglishChar(nextChar)) ||
+        (isEnglishChar(previousChar) && isChineseChar(nextChar))
+      ) {
+        return previousText + " " + nextLine;
+      }
+
+      if (isPunctuation(previousChar)) {
+        return previousText + nextLine;
+      }
+
+      return previousText + " " + nextLine;
+    }
+
+    function fixCommonAPAIssues(ref, index, warnings) {
+      let original = ref;
+      let fixed = ref.replace(/\s+/g, " ").trim();
+
+      if (document.getElementById("fixChineseSpaces").checked) {
+        fixed = removeSpacesInsideChinese(fixed);
+      }
+
+      if (document.getElementById("fixApaPunctuation").checked) {
+        // 標點前多餘空格
+        fixed = fixed.replace(/\s+([,.;:])/g, "$1");
+
+        // 英文逗號、冒號後補空格，例如 Families,Systems / Difficulties:The
+        fixed = fixed.replace(/,([^\s\d])/g, ", $1");
+        fixed = fixed.replace(/:([^\s])/g, ": $1");
+
+        // 句點後接大寫英文時補空格，例如 Later.Journal
+        fixed = fixed.replace(/([a-z\)])\.([A-ZÀ-ÖØ-Þ])/g, "$1. $2");
+
+        // 年份後若缺空格，補空格
+        fixed = fixed.replace(/(\(\d{4}[a-z]?\)\.)([A-ZÀ-ÖØ-Þ\u3400-\u9fff])/g, "$1 $2");
+
+        // 中文括號年份後若缺空格，補空格
+        fixed = fixed.replace(/(（\d{4}[a-z]?）。?)([\u3400-\u9fffA-ZÀ-ÖØ-Þ])/g, "$1 $2");
+
+        // 連續多空格壓成一格
+        fixed = fixed.replace(/[ \t]+/g, " ").trim();
+      }
+
+      if (document.getElementById("removeSuspiciousPageTail").checked) {
+        /*
+          常見 OCR / 複製錯誤：
+          566–572.144
+          160-178.22
+          若整筆文獻最後是「頁碼.數字」，多半是多貼上的頁碼或註記，先刪掉並提示。
+        */
+        const suspiciousTail = /(\d+\s*[–-]\s*\d+)\.(\d{1,5})$/;
+        if (suspiciousTail.test(fixed)) {
+          fixed = fixed.replace(suspiciousTail, "$1.");
+          warnings.push(`第 ${index + 1} 筆：偵測到頁碼後疑似多餘數字，已自動刪除。`);
+        }
+      }
+
+      if (original !== fixed) {
+        warnings.push(`第 ${index + 1} 筆：已修正常見空格或標點問題。`);
+      }
+
+      return fixed;
+    }
+
+    function splitAPAReferences(text) {
+      text = normalizeInput(text);
+      text = protectPossibleNewReference(text);
+
+      const lines = text
+        .split("\n")
+        .map(line => line.trim())
+        .filter(line => line !== "");
+
+      let references = [];
+      let currentRef = "";
+
+      for (let i = 0; i < lines.length; i++) {
+        let line = lines[i];
+
+        if (looksLikeAPAStart(line) && currentRef !== "") {
+          references.push(currentRef.trim());
+          currentRef = line;
+        } else {
+          currentRef = joinLines(currentRef, line);
+        }
+      }
+
+      if (currentRef !== "") {
+        references.push(currentRef.trim());
+      }
+
+      return references;
+    }
+
+    function cleanAPA() {
+      const input = document.getElementById("inputText").value;
+      const warnings = [];
+      const references = splitAPAReferences(input);
+
+      const fixedReferences = references.map((ref, index) => {
+        return fixCommonAPAIssues(ref, index, warnings);
+      });
+
+      const separator = document.getElementById("showBlankLineBetweenRefs").checked ? "\n\n" : "\n";
+      document.getElementById("outputText").value = fixedReferences.join(separator);
+      document.getElementById("detectedRefs").value = references
+        .map((ref, index) => `${index + 1}. ${ref}`)
+        .join("\n\n");
+
+      showReport({
+        mode: "APA 參考文獻",
+        count: references.length,
+        warnings
+      });
+    }
+
+    function shouldKeepAsNewParagraph(previousLine, currentLine) {
+      previousLine = previousLine.trim();
+      currentLine = currentLine.trim();
+
+      if (previousLine === "" || currentLine === "") return true;
+
+      const outlinePattern = /^([一二三四五六七八九十]+、|[0-9]+[.、]|（[一二三四五六七八九十]+）|\([0-9]+\))/;
+      if (outlinePattern.test(currentLine)) return true;
+
+      if (looksLikeAPAStart(currentLine)) return true;
+
+      const sentenceEnd = /[。！？.!?]$/;
+      if (sentenceEnd.test(previousLine)) return true;
+
+      return false;
+    }
+
+    function cleanNormalText() {
+      let text = normalizeInput(document.getElementById("inputText").value);
+
+      if (document.getElementById("fixChineseSpaces").checked) {
+        text = removeSpacesInsideChinese(text);
+      }
+
+      const lines = text
+        .split("\n")
+        .map(line => line.trim());
+
+      let paragraphs = [];
+      let currentParagraph = "";
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+
+        if (line === "") {
+          if (currentParagraph !== "") {
+            paragraphs.push(currentParagraph.trim());
+            currentParagraph = "";
+          }
+          continue;
+        }
+
+        if (currentParagraph === "") {
+          currentParagraph = line;
+        } else if (shouldKeepAsNewParagraph(currentParagraph, line)) {
+          paragraphs.push(currentParagraph.trim());
+          currentParagraph = line;
+        } else {
+          currentParagraph = joinLines(currentParagraph, line);
+        }
+      }
+
+      if (currentParagraph !== "") {
+        paragraphs.push(currentParagraph.trim());
+      }
+
+      document.getElementById("outputText").value = paragraphs.join("\n\n");
+      document.getElementById("detectedRefs").value = "";
+      showReport({
+        mode: "一般段落 / 大綱",
+        count: paragraphs.length,
+        warnings: []
+      });
+    }
+
+    function autoClean() {
+      const text = normalizeInput(document.getElementById("inputText").value);
+      const lines = text.split("\n").map(line => line.trim()).filter(Boolean);
+      const apaStarts = lines.filter(line => looksLikeAPAStart(line)).length;
+
+      /*
+        只要偵測到至少一筆 APA 開頭，就優先使用 APA 清理。
+        因為 APA 被 PDF 斷行時，常常只有第一行符合開頭格式。
+      */
+      if (apaStarts >= 1) {
+        cleanAPA();
+      } else {
+        cleanNormalText();
+      }
+    }
+
+    function showReport(data) {
+      const report = document.getElementById("report");
+      const warningsHTML = data.warnings.length
+        ? `<ul class="warning-list">${data.warnings.map(item => `<li>${escapeHTML(item)}</li>`).join("")}</ul>`
+        : "";
+
+      report.style.display = "block";
+      report.innerHTML = `
+        <strong>清理模式：</strong>${escapeHTML(data.mode)}　
+        <strong>偵測數量：</strong>${data.count}
+        ${warningsHTML}
+      `;
+    }
+
+    function copyResult() {
+      const output = document.getElementById("outputText");
+
+      if (output.value.trim() === "") {
+        alert("目前沒有可複製的內容。");
+        return;
+      }
+
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(output.value)
+          .then(() => alert("已複製整理後結果！"))
+          .catch(() => fallbackCopy(output));
+      } else {
+        fallbackCopy(output);
+      }
+    }
+
+    function fallbackCopy(output) {
+      output.select();
+      output.setSelectionRange(0, 99999);
+      document.execCommand("copy");
+      alert("已複製整理後結果！");
+    }
+
+    function clearAll() {
+      document.getElementById("inputText").value = "";
+      document.getElementById("outputText").value = "";
+      document.getElementById("detectedRefs").value = "";
+      document.getElementById("report").style.display = "none";
+      document.getElementById("report").innerHTML = "";
+    }
+
+    function escapeHTML(text) {
+      return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+  </script>
+</body>
+</html>
